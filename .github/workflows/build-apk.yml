@@ -15,11 +15,14 @@ jobs:
         working-directory: app
     env:
       # Keys: repo Settings -> Secrets and variables -> Actions me daalo (optional; na ho to public RPC chalega)
-      EXPO_PUBLIC_ETH_RPC: ${{ secrets.EXPO_PUBLIC_ETH_RPC }}
-      EXPO_PUBLIC_POLYGON_RPC: ${{ secrets.EXPO_PUBLIC_POLYGON_RPC }}
+      EXPO_PUBLIC_API_BASE_URL: https://p2pal-api.onrender.com
+      EXPO_PUBLIC_BSC_RPC: ${{ secrets.EXPO_PUBLIC_BSC_RPC }}
       EXPO_PUBLIC_TRONGRID_API_KEY: ${{ secrets.EXPO_PUBLIC_TRONGRID_API_KEY }}
       EXPO_PUBLIC_ETHERSCAN_API_KEY: ${{ secrets.EXPO_PUBLIC_ETHERSCAN_API_KEY }}
-      EXPO_PUBLIC_API_BASE_URL: https://p2pal-api.onrender.com
+      EXPO_PUBLIC_ONRAMP_APP_ID: ${{ secrets.EXPO_PUBLIC_ONRAMP_APP_ID }}
+      EXPO_PUBLIC_P2P_URL: ${{ secrets.EXPO_PUBLIC_P2P_URL }}
+      EXPO_PUBLIC_SUPPORT_URL: ${{ secrets.EXPO_PUBLIC_SUPPORT_URL }}
+      EXPO_PUBLIC_PRIVACY_URL: ${{ secrets.EXPO_PUBLIC_PRIVACY_URL }}
       NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v4

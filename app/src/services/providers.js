@@ -1,24 +1,20 @@
 import { JsonRpcProvider } from 'ethers';
 import { TronWeb } from 'tronweb';
-import { CHAINS } from '../config/chains';
+import { NETWORKS } from '../config/chains';
 import { ENV } from '../config/env';
 
-const cache = {};
-
-export function evmProvider(chain) {
-  if (!cache[chain.key]) {
-    cache[chain.key] = new JsonRpcProvider(chain.rpc, chain.chainId, { staticNetwork: true });
-  }
-  return cache[chain.key];
+let bsc = null;
+export function bscProvider() {
+  if (!bsc) bsc = new JsonRpcProvider(NETWORKS.bsc.rpc, 56, { staticNetwork: true });
+  return bsc;
 }
 
-// privateKey sirf signing ke time pass karo; reads ke liye address set karo
-export function tronWeb({ privateKey, address } = {}) {
-  const tw = new TronWeb({
-    fullHost: CHAINS.tron.fullHost,
-    headers: ENV.TRONGRID_API_KEY ? { 'TRON-PRO-API-KEY': ENV.TRONGRID_API_KEY } : {},
+export const tronHeaders = ENV.TRONGRID_API_KEY ? { 'TRON-PRO-API-KEY': ENV.TRONGRID_API_KEY } : {};
+
+export function tronWeb(privateKey) {
+  return new TronWeb({
+    fullHost: NETWORKS.tron.fullHost,
+    headers: tronHeaders,
     ...(privateKey ? { privateKey } : {}),
   });
-  if (!privateKey && address) tw.setAddress(address);
-  return tw;
 }

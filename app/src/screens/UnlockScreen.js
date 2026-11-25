@@ -1,40 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { View, Image } from 'react-native';
-import { Btn, PinField, Muted, ErrorText } from '../components/ui';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import PinPad from '../components/PinPad';
 import { useWallet } from '../context/WalletContext';
 import { colors } from '../theme';
 
 export default function UnlockScreen() {
   const { unlockWithPin, unlockWithBiometric, biometric } = useWallet();
-  const [pin, setPin] = useState('');
-  const [err, setErr] = useState('');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (biometric) unlockWithBiometric(); }, [biometric]);
 
-  const submit = async (p = pin) => {
-    setLoading(true);
-    const r = await unlockWithPin(p);
-    setLoading(false);
-    if (r.ok) return;
-    setPin('');
-    if (r.lockedFor) setErr(`Bahut galat try. ${r.lockedFor} sec baad try karo.`);
-    else setErr(`Galat PIN. ${r.attemptsLeft} try bache.`);
-  };
-
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, padding: 24, justifyContent: 'center', gap: 16 }}>
-      <Image source={require('../../assets/logo-mark.png')} style={{ width: 96, height: 96, alignSelf: 'center' }} resizeMode="contain" />
-      <Image source={require('../../assets/logo-full.png')} style={{ width: 200, height: 46, alignSelf: 'center' }} resizeMode="contain" />
-      <Muted style={{ textAlign: 'center' }}>PIN daalo</Muted>
-      <PinField
-        value={pin}
-        autoFocus
-        onChangeText={(t) => { setPin(t); setErr(''); if (t.length === 6) submit(t); }}
-      />
-      <ErrorText>{err}</ErrorText>
-      <Btn title="Unlock" onPress={() => submit()} loading={loading} disabled={pin.length !== 6} />
-      {biometric && <Btn title="Fingerprint se Unlock" variant="ghost" onPress={unlockWithBiometric} />}
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Image source={require('../../assets/logo-mark.png')} style={{ width: 72, height: 72, alignSelf: 'center', marginBottom: 20 }} resizeMode="contain" />
+        <PinPad title="Welcome back" subtitle="Enter your PIN to unlock" onComplete={unlockWithPin} onBiometric={biometric ? unlockWithBiometric : undefined} />
+      </View>
+    </SafeAreaView>
   );
 }

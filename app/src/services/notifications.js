@@ -1,6 +1,4 @@
-// Push notifications: "USDT receive hua" alerts.
-// Expo push → Android pe Firebase (FCM) use karta hai. EAS me FCM credentials upload karne honge.
-// Server ko SIRF public addresses jaate hain — keys kabhi nahi.
+// Push alerts for incoming USDT. Only public addresses are sent to the server.
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
@@ -19,6 +17,8 @@ Notifications.setNotificationHandler({
 export async function registerPush(addresses) {
   try {
     if (!Device.isDevice) return null;
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+    if (!projectId) return null; // push needs an EAS project id
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: 'Transactions',
@@ -28,8 +28,6 @@ export async function registerPush(addresses) {
     let { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') status = (await Notifications.requestPermissionsAsync()).status;
     if (status !== 'granted') return null;
-
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
     const pushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     await fetch(`${ENV.API_BASE_URL}/notify/register`, {
       method: 'POST',
@@ -38,6 +36,6 @@ export async function registerPush(addresses) {
     });
     return pushToken;
   } catch {
-    return null; // notifications optional hain, app chalti rahe
+    return null;
   }
 }

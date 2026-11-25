@@ -4,11 +4,11 @@ export async function biometricAvailable() {
   return (await LocalAuthentication.hasHardwareAsync()) && (await LocalAuthentication.isEnrolledAsync());
 }
 
-export async function biometricAuth(promptMessage = 'P2Pal unlock karo') {
+export async function biometricAuth(promptMessage = 'Unlock P2Pal') {
   if (!(await biometricAvailable())) return false;
   const r = await LocalAuthentication.authenticateAsync({
     promptMessage,
-    cancelLabel: 'PIN use karo',
+    cancelLabel: 'Use PIN',
     disableDeviceFallback: true,
   });
   return r.success;

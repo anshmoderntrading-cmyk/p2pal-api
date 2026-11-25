@@ -2,7 +2,7 @@
   "expo": {
     "name": "P2Pal",
     "slug": "p2pal",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -20,15 +20,37 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "permissions": ["CAMERA", "USE_BIOMETRIC", "USE_FINGERPRINT"],
+      "permissions": [
+        "CAMERA",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT"
+      ],
       "allowBackup": false
     },
     "plugins": [
       "expo-secure-store",
-      ["expo-local-authentication", { "faceIDPermission": "P2Pal unlock karne ke liye Face ID." }],
-      ["expo-camera", { "cameraPermission": "QR code scan karne ke liye camera chahiye." }],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "P2Pal unlock karne ke liye Face ID."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "QR code scan karne ke liye camera chahiye."
+        }
+      ],
       "expo-notifications",
-      ["expo-splash-screen", { "image": "./assets/splash.png", "backgroundColor": "#000000", "imageWidth": 260, "resizeMode": "contain" }]
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "backgroundColor": "#000000",
+          "imageWidth": 260,
+          "resizeMode": "contain"
+        }
+      ]
     ]
   }
 }

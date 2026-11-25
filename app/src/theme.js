@@ -1,26 +1,26 @@
-// P2Pal brand — logo green on deep navy
+// P2Pal brand
 export const colors = {
-  bg: '#10141C',
-  bgDeep: '#0B0E14',
-  card: '#1B212C',
-  cardHi: '#232A37',
-  border: '#262E3B',
+  bg: '#0E1218',
+  bgDeep: '#090C11',
+  card: '#171C25',
+  cardHi: '#1F2632',
+  border: '#252D3A',
   text: '#F5F7FA',
-  muted: '#8B95A5',
+  textSoft: '#C9D1DC',
+  muted: '#7E8A9C',
   accent: '#0ECF8E',
-  accentDark: '#0A9E6C',
+  accentSoft: 'rgba(14,207,142,0.12)',
+  onAccent: '#03180F',
   blue: '#3B82F6',
   up: '#22C55E',
-  down: '#EF4444',
-  danger: '#EF4444',
-  warn: '#F59E0B',
+  danger: '#F04F4F',
+  dangerSoft: 'rgba(240,79,79,0.12)',
+  warn: '#F5A524',
+  warnSoft: 'rgba(245,165,36,0.10)',
+  tron: '#EB0029',
+  bsc: '#F3BA2F',
+  usdt: '#26A17B',
 };
 
-// Coin brand colors for token icons
-export const coinColors = {
-  TRX: '#EB0029',
-  USDT: '#26A17B',
-  BNB: '#F3BA2F',
-  ETH: '#627EEA',
-  POL: '#8247E5',
-};
+export const radius = { sm: 10, md: 14, lg: 20, xl: 26 };
+export const mono = 'monospace';

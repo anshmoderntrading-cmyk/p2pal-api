@@ -1,28 +1,44 @@
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { usePreventScreenCapture } from 'expo-screen-capture';
-import { Screen, Btn, Title, Muted, Warn, SeedGrid } from '../components/ui';
+import { Screen, Btn, H1, Muted, Notice, SeedGrid } from '../components/ui';
 import { generateMnemonic } from '../services/wallet';
 import { colors } from '../theme';
 
 export default function CreateWalletScreen({ navigation }) {
-  usePreventScreenCapture(); // seed ka screenshot block
+  usePreventScreenCapture();
   const [phrase] = useState(() => generateMnemonic());
+  const [revealed, setRevealed] = useState(false);
   const [saved, setSaved] = useState(false);
 
   return (
     <Screen>
-      <Title>Apna Seed Phrase Likh Lo</Title>
-      <Muted>Ye 12 words hi aapka wallet hain. Phone kho gaya to sirf inhi se wallet wapas milega.</Muted>
-      <SeedGrid words={phrase.split(' ')} />
-      <Warn>
-        Kaagaz pe likho. Screenshot, WhatsApp, Google Drive pe kabhi mat rakho. P2Pal team kabhi bhi seed phrase nahi maangti.
-      </Warn>
-      <Pressable onPress={() => setSaved(!saved)} style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-        <View style={{ width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: colors.accent, backgroundColor: saved ? colors.accent : 'transparent' }} />
-        <Text style={{ color: colors.text, flex: 1 }}>Maine 12 words safe jagah likh liye hain</Text>
+      <H1>Your recovery phrase</H1>
+      <Muted>These 12 words are the only way to restore your wallet. Write them down in order and keep them somewhere safe.</Muted>
+
+      <Pressable onPress={() => setRevealed(true)} disabled={revealed}>
+        <View>
+          <SeedGrid words={phrase.split(' ')} />
+          {!revealed && (
+            <View style={{ position: 'absolute', inset: 0, top: 0, left: 0, right: 0, bottom: 0, backgroundColor: colors.card, borderRadius: 14, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <Ionicons name="eye-off" size={28} color={colors.textSoft} />
+              <Text style={{ color: colors.text, fontWeight: '700' }}>Tap to reveal</Text>
+              <Text style={{ color: colors.muted, fontSize: 13 }}>Make sure no one is watching your screen</Text>
+            </View>
+          )}
+        </View>
       </Pressable>
-      <Btn title="Aage Badho" disabled={!saved} onPress={() => navigation.navigate('ConfirmSeed', { phrase })} />
+
+      <Notice tone="danger" icon="lock-closed">
+        Never share your recovery phrase. P2Pal support will never ask for it. Do not store it in screenshots, chats or cloud notes.
+      </Notice>
+
+      <Pressable onPress={() => setSaved(!saved)} style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+        <Ionicons name={saved ? 'checkbox' : 'square-outline'} size={24} color={saved ? colors.accent : colors.muted} />
+        <Text style={{ color: colors.textSoft, flex: 1 }}>I have written down my recovery phrase</Text>
+      </Pressable>
+      <Btn title="Continue" disabled={!saved || !revealed} onPress={() => navigation.navigate('ConfirmSeed', { phrase })} />
     </Screen>
   );
 }

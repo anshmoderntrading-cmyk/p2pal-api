@@ -1,20 +1,21 @@
-let cache = { at: 0, data: {} };
+let cache = { at: 0, inr: null };
 
-// CoinGecko se INR + USD price aur 24h change (60 sec cache)
-export async function getPrices(ids) {
-  const uniq = [...new Set(ids.filter(Boolean))];
-  const missing = uniq.filter((id) => !cache.data[id]);
-  if (missing.length === 0 && Date.now() - cache.at < 60_000) return cache.data;
+// USDT → INR rate (60s cache)
+export async function getUsdtInr() {
+  if (cache.inr && Date.now() - cache.at < 60_000) return cache.inr;
   try {
-    const r = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${uniq.join(',')}&vs_currencies=inr,usd&include_24hr_change=true`
-    );
-    if (r.ok) cache = { at: Date.now(), data: { ...cache.data, ...(await r.json()) } };
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=inr');
+    const j = await r.json();
+    if (j.tether?.inr) cache = { at: Date.now(), inr: j.tether.inr };
   } catch {}
-  return cache.data;
+  return cache.inr;
 }
 
-export const formatINR = (n) =>
+export const fmtUsd = (n) =>
+  `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export const fmtInr = (n) =>
   `₹${Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export const formatPct = (n) => (n == null ? '' : `${n >= 0 ? '+' : ''}${Number(n).toFixed(2)}%`);
+export const fmtUsdt = (n) =>
+  Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
