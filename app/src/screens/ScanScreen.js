@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Screen, Btn, Muted } from '../components/ui';
 
-export default function ScanScreen({ navigation }) {
+export default function ScanScreen({ navigation, route }) {
   const [perm, requestPerm] = useCameraPermissions();
   const done = useRef(false);
 
@@ -26,7 +26,9 @@ export default function ScanScreen({ navigation }) {
         onBarcodeScanned={({ data }) => {
           if (done.current) return;
           done.current = true;
-          navigation.popTo('Send', { scanned: data }, { merge: true });
+          // Home se aaye → Send kholo; Send se aaye → wapas Send pe
+          if (route.params?.from === 'home') navigation.replace('Send', { scanned: data });
+          else navigation.popTo('Send', { scanned: data }, { merge: true });
         }}
       />
     </View>

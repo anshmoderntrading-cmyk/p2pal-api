@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Image } from 'react-native';
 import { Btn, PinField, Muted, ErrorText } from '../components/ui';
 import { useWallet } from '../context/WalletContext';
 import { colors } from '../theme';
@@ -24,7 +24,8 @@ export default function UnlockScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, padding: 24, justifyContent: 'center', gap: 16 }}>
-      <Text style={{ color: colors.text, fontSize: 30, fontWeight: '900', textAlign: 'center' }}>P2Pal</Text>
+      <Image source={require('../../assets/logo-mark.png')} style={{ width: 96, height: 96, alignSelf: 'center' }} resizeMode="contain" />
+      <Image source={require('../../assets/logo-full.png')} style={{ width: 200, height: 46, alignSelf: 'center' }} resizeMode="contain" />
       <Muted style={{ textAlign: 'center' }}>PIN daalo</Muted>
       <PinField
         value={pin}

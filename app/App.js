@@ -2,6 +2,8 @@ import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { WalletProvider, useWallet } from './src/context/WalletContext';
 import { colors } from './src/theme';
@@ -24,10 +26,43 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import ShowSeedScreen from './src/screens/ShowSeedScreen';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
 const navTheme = {
   ...DarkTheme,
-  colors: { ...DarkTheme.colors, background: colors.bg, card: colors.bg, primary: colors.accent, text: colors.text },
+  colors: { ...DarkTheme.colors, background: colors.bg, card: colors.bg, primary: colors.accent, text: colors.text, border: colors.border },
 };
+
+const headerOpts = {
+  headerStyle: { backgroundColor: colors.bg },
+  headerTintColor: colors.text,
+  headerShadowVisible: false,
+  headerTitleStyle: { fontWeight: '700' },
+};
+
+const TAB_ICONS = { Wallet: 'wallet', Trade: 'trending-up', History: 'time' };
+
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        ...headerOpts,
+        tabBarActiveTintColor: colors.accent,
+        tabBarInactiveTintColor: colors.muted,
+        tabBarStyle: { backgroundColor: colors.bgDeep, borderTopColor: colors.border, height: 76, paddingTop: 8 },
+        tabBarLabelStyle: { fontSize: 13, fontWeight: '700' },
+        tabBarIcon: ({ color, focused }) => (
+          <Ionicons name={focused ? TAB_ICONS[route.name] : `${TAB_ICONS[route.name]}-outline`} size={26} color={color} />
+        ),
+        sceneStyle: { backgroundColor: colors.bg },
+      })}
+    >
+      <Tab.Screen name="Wallet" component={HomeScreen} options={{ headerShown: false }} />
+      <Tab.Screen name="Trade" component={SwapScreen} options={{ title: 'Swap', tabBarLabel: 'Trade' }} />
+      <Tab.Screen name="History" component={HistoryScreen} />
+    </Tab.Navigator>
+  );
+}
 
 function Routes() {
   const { status } = useWallet();
@@ -41,14 +76,7 @@ function Routes() {
   }
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.bg },
-        headerTintColor: colors.text,
-        headerShadowVisible: false,
-        contentStyle: { backgroundColor: colors.bg },
-      }}
-    >
+    <Stack.Navigator screenOptions={{ ...headerOpts, contentStyle: { backgroundColor: colors.bg } }}>
       {status === 'none' && (
         <>
           <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
@@ -63,13 +91,11 @@ function Routes() {
       )}
       {status === 'unlocked' && (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'P2Pal' }} />
+          <Stack.Screen name="Main" component={MainTabs} options={{ headerShown: false }} />
           <Stack.Screen name="Send" component={SendScreen} options={{ title: 'Send' }} />
           <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'QR Scan' }} />
           <Stack.Screen name="Receive" component={ReceiveScreen} options={{ title: 'Receive' }} />
-          <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'History' }} />
-          <Stack.Screen name="Swap" component={SwapScreen} options={{ title: 'Swap' }} />
-          <Stack.Screen name="Buy" component={BuyScreen} options={{ title: 'Buy Crypto' }} />
+          <Stack.Screen name="Buy" component={BuyScreen} options={{ title: 'Add Funds' }} />
           <Stack.Screen name="Stake" component={StakeScreen} options={{ title: 'TRX Staking' }} />
           <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
           <Stack.Screen name="ShowSeed" component={ShowSeedScreen} options={{ title: 'Seed Phrase' }} />

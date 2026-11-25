@@ -4,8 +4,9 @@
     "slug": "p2pal",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#0B0F14",
+    "backgroundColor": "#10141C",
     "ios": {
       "bundleIdentifier": "com.p2pal.wallet",
       "infoPlist": {
@@ -15,6 +16,10 @@
     },
     "android": {
       "package": "com.p2pal.wallet",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
       "permissions": ["CAMERA", "USE_BIOMETRIC", "USE_FINGERPRINT"],
       "allowBackup": false
     },
@@ -22,7 +27,8 @@
       "expo-secure-store",
       ["expo-local-authentication", { "faceIDPermission": "P2Pal unlock karne ke liye Face ID." }],
       ["expo-camera", { "cameraPermission": "QR code scan karne ke liye camera chahiye." }],
-      "expo-notifications"
+      "expo-notifications",
+      ["expo-splash-screen", { "image": "./assets/splash.png", "backgroundColor": "#000000", "imageWidth": 260, "resizeMode": "contain" }]
     ]
   }
 }
