@@ -147,5 +147,6 @@ async function poll() {
 }
 setInterval(poll, Number(POLL_SECONDS) * 1000);
 
+app.get('/', (req, res) => res.json({ name: 'P2Pal API', status: 'running' }));
 app.get('/health', (req, res) => res.json({ ok: true }));
 app.listen(PORT, () => console.log(`P2Pal API on :${PORT}`));
