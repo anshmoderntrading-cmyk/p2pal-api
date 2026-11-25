@@ -38,7 +38,10 @@ async function oneinch(chainId, endpoint, params) {
     headers: { Authorization: `Bearer ${ONEINCH_API_KEY}`, accept: 'application/json' },
   });
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(j.description || j.error || '1inch error'), { status: r.status });
+  if (!r.ok) {
+    console.error('[1inch]', r.status, endpoint, JSON.stringify(j).slice(0, 300));
+    throw Object.assign(new Error(j.description || j.error || '1inch error'), { status: r.status });
+  }
   return j;
 }
 
