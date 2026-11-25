@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "P2Pal",
+    "slug": "p2pal",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0B0F14",
+    "ios": {
+      "bundleIdentifier": "com.p2pal.wallet",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "P2Pal wallet unlock aur transaction confirm karne ke liye Face ID use karta hai.",
+        "NSCameraUsageDescription": "Wallet address ka QR code scan karne ke liye camera chahiye."
+      }
+    },
+    "android": {
+      "package": "com.p2pal.wallet",
+      "permissions": ["CAMERA", "USE_BIOMETRIC", "USE_FINGERPRINT"],
+      "allowBackup": false
+    },
+    "plugins": [
+      "expo-secure-store",
+      ["expo-local-authentication", { "faceIDPermission": "P2Pal unlock karne ke liye Face ID." }],
+      ["expo-camera", { "cameraPermission": "QR code scan karne ke liye camera chahiye." }],
+      "expo-notifications"
+    ]
+  }
+}
