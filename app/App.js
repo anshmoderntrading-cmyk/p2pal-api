@@ -21,6 +21,7 @@ import WithdrawScreen from './src/screens/WithdrawScreen';
 import ScanScreen from './src/screens/ScanScreen';
 import P2PScreen from './src/screens/P2PScreen';
 import ActivityScreen from './src/screens/ActivityScreen';
+import WebViewScreen from './src/screens/WebViewScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import ShowSeedScreen from './src/screens/ShowSeedScreen';
 import ChangePinScreen from './src/screens/ChangePinScreen';
@@ -94,6 +95,7 @@ function Routes() {
           <Stack.Screen name="Deposit" component={DepositScreen} />
           <Stack.Screen name="Withdraw" component={WithdrawScreen} />
           <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'Scan QR' }} />
+          <Stack.Screen name="Checkout" component={WebViewScreen} options={({ route }) => ({ title: route.params?.title || 'Checkout' })} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="ShowSeed" component={ShowSeedScreen} options={{ title: '' }} />
           <Stack.Screen name="ChangePin" component={ChangePinScreen} options={{ title: '' }} />

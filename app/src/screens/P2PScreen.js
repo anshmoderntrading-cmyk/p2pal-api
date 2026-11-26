@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
 import { Screen, Btn, Field, Label, Muted, Segmented, Notice } from '../components/ui';
 import { useWallet } from '../context/WalletContext';
 import { NETWORKS, addressFor } from '../config/chains';
@@ -20,10 +19,8 @@ export default function P2PScreen({ navigation }) {
 
   const open = () => {
     if (!p) return;
-    WebBrowser.openBrowserAsync(
-      p.url({ side, network, address: addressFor(addresses, network), amount: Number(amount) || undefined }),
-      { toolbarColor: colors.bg, controlsColor: colors.accent }
-    );
+    const url = p.url({ side, network, address: addressFor(addresses, network), amount: Number(amount) || undefined });
+    navigation.navigate('Checkout', { url, title: `${side === 'buy' ? 'Buy' : 'Sell'} USDT · ${p.name}` });
   };
 
   return (
