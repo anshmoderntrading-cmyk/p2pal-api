@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Image, Text } from 'react-native';
+import { View, Image, Text, Pressable, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Btn } from '../components/ui';
+import { ENV } from '../config/env';
 import { colors } from '../theme';
 
 const POINTS = [
@@ -36,8 +37,12 @@ export default function WelcomeScreen({ navigation }) {
       <View style={{ gap: 12 }}>
         <Btn title="Create a new wallet" onPress={() => navigation.navigate('CreateWallet')} />
         <Btn title="I already have a wallet" variant="secondary" onPress={() => navigation.navigate('ImportWallet')} />
-        <Text style={{ color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 4 }}>
-          By continuing you agree to the Terms of Service
+        <Pressable onPress={() => Linking.openURL(ENV.TELEGRAM_URL)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 6 }}>
+          <Ionicons name="paper-plane" size={15} color={colors.blue} />
+          <Text style={{ color: colors.textSoft, fontSize: 13, fontWeight: '600' }}>Join our Telegram channel</Text>
+        </Pressable>
+        <Text style={{ color: colors.muted, fontSize: 12, textAlign: 'center', marginTop: 8 }}>
+          By continuing you agree to our Terms & Privacy Policy
         </Text>
       </View>
     </SafeAreaView>

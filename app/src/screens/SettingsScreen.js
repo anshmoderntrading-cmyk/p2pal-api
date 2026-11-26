@@ -79,9 +79,15 @@ export default function SettingsScreen({ navigation }) {
         <Item icon="copy-outline" label="BEP20 (BNB)" value={copied === 'b' ? 'Copied' : shortAddr(addresses?.evm)} onPress={() => copy('b', addresses.evm)} />
       </Group>
 
-      <Group title="ABOUT">
+      <Group title="COMMUNITY">
+        {!!ENV.TELEGRAM_URL && <Item icon="paper-plane-outline" label="Telegram channel" onPress={() => Linking.openURL(ENV.TELEGRAM_URL)} />}
         {!!ENV.SUPPORT_URL && <Item icon="chatbubble-ellipses-outline" label="Support" onPress={() => Linking.openURL(ENV.SUPPORT_URL)} />}
-        {!!ENV.PRIVACY_URL && <Item icon="document-text-outline" label="Privacy policy" onPress={() => Linking.openURL(ENV.PRIVACY_URL)} />}
+        {!!ENV.WEBSITE_URL && <Item icon="globe-outline" label="Website" onPress={() => Linking.openURL(ENV.WEBSITE_URL)} />}
+      </Group>
+
+      <Group title="LEGAL">
+        {!!ENV.PRIVACY_URL && <Item icon="shield-checkmark-outline" label="Privacy policy" onPress={() => Linking.openURL(ENV.PRIVACY_URL)} />}
+        {!!ENV.TERMS_URL && <Item icon="document-text-outline" label="Terms of service" onPress={() => Linking.openURL(ENV.TERMS_URL)} />}
         <Item icon="information-circle-outline" label="Version" value={APP_VERSION} />
       </Group>
 

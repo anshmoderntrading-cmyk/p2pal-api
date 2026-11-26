@@ -8,8 +8,12 @@ export const ENV = {
   TRANSAK_API_KEY: process.env.EXPO_PUBLIC_TRANSAK_API_KEY || '',
   TRANSAK_ENV: process.env.EXPO_PUBLIC_TRANSAK_ENV || 'production',
   P2P_URL: process.env.EXPO_PUBLIC_P2P_URL || '',
-  SUPPORT_URL: process.env.EXPO_PUBLIC_SUPPORT_URL || '',
-  PRIVACY_URL: process.env.EXPO_PUBLIC_PRIVACY_URL || '',
+  // Public links (safe to ship as defaults; overridable via secrets)
+  WEBSITE_URL: process.env.EXPO_PUBLIC_WEBSITE_URL || 'https://p2pal-site.onrender.com',
+  PRIVACY_URL: process.env.EXPO_PUBLIC_PRIVACY_URL || 'https://p2pal-site.onrender.com/privacy.html',
+  TERMS_URL: process.env.EXPO_PUBLIC_TERMS_URL || 'https://p2pal-site.onrender.com/terms.html',
+  TELEGRAM_URL: process.env.EXPO_PUBLIC_TELEGRAM_URL || 'https://t.me/P2Palofficial',
+  SUPPORT_URL: process.env.EXPO_PUBLIC_SUPPORT_URL || 'mailto:support@p2palwallet.online',
 };
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
