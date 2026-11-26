@@ -2,8 +2,29 @@
 import { ENV } from '../config/env';
 
 const ONRAMP_NET = { tron: 'trc20', bsc: 'bep20' };
+const TRANSAK_NET = { tron: 'tron', bsc: 'bsc' };
+const TRANSAK_HOST = ENV.TRANSAK_ENV === 'staging' ? 'https://global-stg.transak.com' : 'https://global.transak.com';
 
 export const P2P_PROVIDERS = [
+  {
+    key: 'transak',
+    name: 'Transak',
+    tagline: 'UPI · Card · Bank transfer',
+    badge: 'Licensed partner',
+    ready: () => !!ENV.TRANSAK_API_KEY,
+    url: ({ side, network, address, amount }) => {
+      const p = new URLSearchParams({
+        apiKey: ENV.TRANSAK_API_KEY,
+        productsAvailed: side === 'buy' ? 'BUY' : 'SELL',
+        cryptoCurrencyCode: 'USDT',
+        network: TRANSAK_NET[network],
+        fiatCurrency: 'INR',
+        ...(side === 'buy' ? { walletAddress: address, disableWalletAddressForm: 'true' } : {}),
+        ...(amount ? (side === 'buy' ? { fiatAmount: String(amount) } : { cryptoAmount: String(amount) }) : {}),
+      });
+      return `${TRANSAK_HOST}/?${p}`;
+    },
+  },
   {
     key: 'onramp',
     name: 'Onramp.money',
