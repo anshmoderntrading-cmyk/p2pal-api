@@ -23,6 +23,10 @@ import P2PScreen from './src/screens/P2PScreen';
 import ActivityScreen from './src/screens/ActivityScreen';
 import WebViewScreen from './src/screens/WebViewScreen';
 import TxDetailScreen from './src/screens/TxDetailScreen';
+import MarketScreen from './src/screens/MarketScreen';
+import PostAdScreen from './src/screens/PostAdScreen';
+import OrderScreen from './src/screens/OrderScreen';
+import OrderChatScreen from './src/screens/OrderChatScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import ShowSeedScreen from './src/screens/ShowSeedScreen';
 import ChangePinScreen from './src/screens/ChangePinScreen';
@@ -97,6 +101,10 @@ function Routes() {
           <Stack.Screen name="Withdraw" component={WithdrawScreen} />
           <Stack.Screen name="Scan" component={ScanScreen} options={{ title: 'Scan QR' }} />
           <Stack.Screen name="TxDetail" component={TxDetailScreen} options={{ title: 'Transaction' }} />
+          <Stack.Screen name="Market" component={MarketScreen} options={{ title: 'P2P Market' }} />
+          <Stack.Screen name="PostAd" component={PostAdScreen} options={{ title: 'Post an Ad' }} />
+          <Stack.Screen name="Order" component={OrderScreen} options={{ title: 'Order' }} />
+          <Stack.Screen name="OrderChat" component={OrderChatScreen} options={{ title: 'Chat' }} />
           <Stack.Screen name="Checkout" component={WebViewScreen} options={({ route }) => ({ title: route.params?.title || 'Checkout' })} />
           <Stack.Screen name="Settings" component={SettingsScreen} />
           <Stack.Screen name="ShowSeed" component={ShowSeedScreen} options={{ title: '' }} />

@@ -23,15 +23,4 @@ export const P2P_PROVIDERS = [
       return `https://onramp.money/main/${side === 'buy' ? 'buy' : 'sell'}/?${p}`;
     },
   },
-  {
-    key: 'custom',
-    name: 'P2Pal P2P Market',
-    tagline: 'Trade directly with verified merchants',
-    badge: 'P2P',
-    ready: () => !!ENV.P2P_URL,
-    url: ({ side, network, address, amount }) => {
-      const p = new URLSearchParams({ side, network, address, ...(amount ? { amount: String(amount) } : {}) });
-      return `${ENV.P2P_URL}${ENV.P2P_URL.includes('?') ? '&' : '?'}${p}`;
-    },
-  },
 ];

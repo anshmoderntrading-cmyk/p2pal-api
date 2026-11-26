@@ -14,6 +14,13 @@ export const ENV = {
   TERMS_URL: process.env.EXPO_PUBLIC_TERMS_URL || 'https://p2pal-site.onrender.com/terms.html',
   TELEGRAM_URL: process.env.EXPO_PUBLIC_TELEGRAM_URL || 'https://t.me/P2Palofficial',
   SUPPORT_URL: process.env.EXPO_PUBLIC_SUPPORT_URL || 'mailto:support@p2palwallet.online',
+  // P2P escrow contract addresses — fill after deploying P2PalEscrow.sol to testnet.
+  ESCROW_BSC: process.env.EXPO_PUBLIC_ESCROW_BSC || '',
+  ESCROW_TRON: process.env.EXPO_PUBLIC_ESCROW_TRON || '',
 };
 
-export const APP_VERSION = '1.4.0';
+// Browse/post/chat work against the backend now; on-chain escrow needs an address.
+export const escrowAddress = (network) => (network === 'tron' ? ENV.ESCROW_TRON : ENV.ESCROW_BSC);
+export const escrowReady = (network) => !!escrowAddress(network);
+
+export const APP_VERSION = '1.5.0';

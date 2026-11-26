@@ -25,6 +25,23 @@ export default function P2PScreen({ navigation }) {
 
   return (
     <Screen>
+      <Pressable onPress={() => navigation.navigate('Market')}>
+        {({ pressed }) => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, borderRadius: radius.lg, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accent, opacity: pressed ? 0.85 : 1 }}>
+            <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="people" size={24} color={colors.onAccent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: colors.text, fontSize: 16, fontWeight: '800' }}>P2Pal P2P Market</Text>
+              <Text style={{ color: colors.muted, fontSize: 13, marginTop: 2 }}>Trade USDT directly with people · best rates</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={22} color={colors.accent} />
+          </View>
+        )}
+      </Pressable>
+
+      <Text style={{ color: colors.muted, fontSize: 13, textAlign: 'center' }}>— or buy/sell instantly via partner —</Text>
+
       <Segmented items={[{ key: 'buy', label: 'Buy USDT' }, { key: 'sell', label: 'Sell USDT' }]} value={side} onChange={setSide} />
 
       <View style={{ gap: 8 }}>
