@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useWallet } from '../context/WalletContext';
 import { NETWORK_LIST } from '../config/chains';
-import { getUsdtBalances } from '../services/usdt';
+import { getUsdtBalances, getNativeBalances } from '../services/usdt';
 import { getUsdtInr, fmtUsd, fmtInr, fmtUsdt } from '../services/prices';
 import { ENV } from '../config/env';
 import TokenIcon from '../components/TokenIcon';
@@ -30,14 +30,16 @@ function Action({ icon, label, onPress, primary }) {
 export default function HomeScreen({ navigation }) {
   const { addresses, prefs, setPrefs } = useWallet();
   const [bal, setBal] = useState({ tron: null, bsc: null });
+  const [nat, setNat] = useState({ tron: null, bsc: null });
   const [inr, setInr] = useState(null);
   const [loading, setLoading] = useState(false);
   const [offline, setOffline] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [b, rate] = await Promise.all([getUsdtBalances(addresses), getUsdtInr()]);
+    const [b, rate, nb] = await Promise.all([getUsdtBalances(addresses), getUsdtInr(), getNativeBalances(addresses)]);
     setBal(b);
+    setNat(nb);
     setInr(rate);
     setOffline(b.tron === null && b.bsc === null);
     setLoading(false);
@@ -149,12 +151,37 @@ export default function HomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Gas-free info */}
+        {/* Network fee balance (TRX / BNB) */}
+        <View>
+          <Text style={s.section}>Network fee balance</Text>
+          <View style={s.list}>
+            {NETWORK_LIST.map((n, i) => (
+              <Pressable key={n.key} onPress={() => navigation.navigate('Deposit', { network: n.key, asset: 'native' })}>
+                {({ pressed }) => (
+                  <View style={[s.row, i > 0 && s.rowBorder, pressed && { backgroundColor: colors.cardHi }]}>
+                    <View style={[s.nativeIcon, { backgroundColor: n.key === 'tron' ? 'rgba(235,0,41,0.14)' : 'rgba(243,186,47,0.14)' }]}>
+                      <Text style={{ color: n.key === 'tron' ? colors.tron : colors.bsc, fontWeight: '900', fontSize: 13 }}>{n.nativeSymbol}</Text>
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 14 }}>
+                      <Text style={s.sym}>{n.nativeSymbol}</Text>
+                      <Text style={s.sub}>Used for {n.label} network fees</Text>
+                    </View>
+                    <Text style={[s.sym, { marginRight: 8 }]}>
+                      {nat[n.key] === null ? '—' : mask(Number(nat[n.key]).toLocaleString('en-US', { maximumFractionDigits: n.key === 'tron' ? 2 : 5 }))}
+                    </Text>
+                    <Ionicons name="add-circle-outline" size={20} color={colors.accent} />
+                  </View>
+                )}
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
         <View style={s.info}>
           <View style={s.infoIcon}><Ionicons name="flash" size={20} color={colors.accent} /></View>
           <View style={{ flex: 1 }}>
-            <Text style={s.infoTitle}>Gas-free transfers</Text>
-            <Text style={s.infoSub}>Network fees are paid in USDT. You never need TRX or BNB.</Text>
+            <Text style={s.infoTitle}>Flexible network fees</Text>
+            <Text style={s.infoSub}>Pay fees from your TRX / BNB balance, or in USDT if you have none.</Text>
           </View>
         </View>
 
@@ -221,6 +248,7 @@ const s = StyleSheet.create({
   sub: { color: colors.muted, fontSize: 13, marginTop: 3 },
 
   info: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.card, borderRadius: radius.lg, padding: 16 },
+  nativeIcon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
   infoIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   infoTitle: { color: colors.text, fontWeight: '700', fontSize: 15 },
   infoSub: { color: colors.muted, fontSize: 13, marginTop: 2 },
