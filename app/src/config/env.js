@@ -16,4 +16,4 @@ export const ENV = {
   SUPPORT_URL: process.env.EXPO_PUBLIC_SUPPORT_URL || 'mailto:support@p2palwallet.online',
 };
 
-export const APP_VERSION = '1.3.0';
+export const APP_VERSION = '1.4.0';

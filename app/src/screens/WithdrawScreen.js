@@ -314,7 +314,7 @@ export default function WithdrawScreen({ route, navigation }) {
                 </View>
                 <Text style={s.sheetTitle}>Withdrawal sent</Text>
                 <Muted style={{ textAlign: 'center' }}>{fmtUsdt(amt)} USDT is on its way. It usually arrives within a minute.</Muted>
-                <Btn title="View on explorer" variant="secondary" icon="open-outline" style={{ alignSelf: 'stretch' }} onPress={() => WebBrowser.openBrowserAsync(n.explorerTx(result.hash))} />
+                <Btn title="View details" variant="secondary" icon="receipt-outline" style={{ alignSelf: 'stretch' }} onPress={() => { setConfirm(false); navigation.replace('TxDetail', { tx: { network, hash: result.hash, amount: amt, dir: 'out', counterparty: dest, time: Date.now(), fee: Number(result.fee) || null } }); }} />
                 <Btn title="Done" style={{ alignSelf: 'stretch' }} onPress={() => { setConfirm(false); navigation.goBack(); }} />
               </View>
             )}

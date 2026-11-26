@@ -16,7 +16,7 @@ import { colors, radius } from '../theme';
 const fmtDate = (t) =>
   new Date(t).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-export default function ActivityScreen() {
+export default function ActivityScreen({ navigation }) {
   const { addresses } = useWallet();
   const [filter, setFilter] = useState('all');
   const [data, setData] = useState({ items: [], bscAvailable: true });
@@ -42,7 +42,7 @@ export default function ActivityScreen() {
     const icon = isFee ? 'flash' : t.dir === 'in' ? 'arrow-down' : 'arrow-up';
     const title = isFee ? 'Network fee' : t.dir === 'in' ? 'Received' : 'Sent';
     return (
-      <Pressable onPress={() => WebBrowser.openBrowserAsync(NETWORKS[t.network].explorerTx(t.hash))}>
+      <Pressable onPress={() => navigation.navigate('TxDetail', { tx: t })}>
         {({ pressed }) => (
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14, gap: 14, backgroundColor: pressed ? colors.cardHi : colors.card, borderRadius: radius.md }}>
             <View style={{ width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: t.dir === 'in' ? colors.accentSoft : colors.cardHi }}>
