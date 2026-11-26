@@ -8,6 +8,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { TronWeb } from 'tronweb';
 import { ethers } from 'ethers';
+import { initDb } from './db.js';
+import p2pRouter from './p2p.js';
+import { startP2PListener } from './p2p-listener.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const E = process.env;
@@ -227,6 +230,8 @@ app.disable('x-powered-by');
 app.use(express.json({ limit: '10kb' }));
 app.use(ipLimit);
 
+app.use('/p2p', p2pRouter); // in-house P2P market (needs DATABASE_URL)
+
 app.get('/', (req, res) => res.json({ name: 'P2Pal API', status: 'running' }));
 app.get('/health', (req, res) => res.json({ ok: true }));
 
@@ -368,3 +373,8 @@ async function poll() {
 setInterval(poll, Number(E.POLL_SECONDS || 60) * 1000);
 
 app.listen(PORT, () => console.log(`P2Pal API on :${PORT}`));
+
+// P2P market: set up schema and start the escrow event listener (no-op without DATABASE_URL)
+initDb()
+  .then((ok) => { if (ok) startP2PListener(); })
+  .catch((e) => console.error('[db] init failed', e.message));

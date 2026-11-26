@@ -12,6 +12,7 @@
   "dependencies": {
     "ethers": "^6.13.4",
     "express": "^4.21.0",
+    "pg": "^8.13.1",
     "tronweb": "^6.0.0"
   }
 }
