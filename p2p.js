@@ -38,10 +38,10 @@ router.post('/merchants', requireAuth(), wrap(async (req, res) => {
 // ---------------- Ads ----------------
 router.get('/ads', wrap(async (req, res) => {
   const { side, network } = req.query;
-  const cond = ['status=$1'];
+  const cond = ['a.status=$1'];
   const args = ['active'];
-  if (side && ['buy', 'sell'].includes(side)) { args.push(side); cond.push(`side=$${args.length}`); }
-  if (network && NETWORKS.includes(network)) { args.push(network); cond.push(`network=$${args.length}`); }
+  if (side && ['buy', 'sell'].includes(side)) { args.push(side); cond.push(`a.side=$${args.length}`); }
+  if (network && NETWORKS.includes(network)) { args.push(network); cond.push(`a.network=$${args.length}`); }
   const { rows } = await q(
     `SELECT a.*, m.display_name, m.trades_done, m.kyc_status
      FROM ads a LEFT JOIN merchants m ON m.address=a.maker_address
