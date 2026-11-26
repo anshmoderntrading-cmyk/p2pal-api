@@ -11,8 +11,10 @@ import { colors, radius, mono } from '../theme';
 export default function DepositScreen({ route }) {
   const { addresses } = useWallet();
   const [network, setNetwork] = useState(route.params?.network || 'tron');
+  const [asset, setAsset] = useState(route.params?.asset === 'native' ? 'native' : 'usdt');
   const [copied, setCopied] = useState(false);
   const n = NETWORKS[network];
+  const sym = asset === 'native' ? n.nativeSymbol : 'USDT';
   const address = addressFor(addresses, network);
 
   const copy = async () => {
@@ -28,11 +30,16 @@ export default function DepositScreen({ route }) {
         value={network}
         onChange={setNetwork}
       />
+      <Segmented
+        items={[{ key: 'usdt', label: 'USDT' }, { key: 'native', label: `${n.nativeSymbol} (for fees)` }]}
+        value={asset}
+        onChange={setAsset}
+      />
 
       <View style={{ backgroundColor: colors.card, borderRadius: radius.xl, padding: 24, alignItems: 'center', gap: 18 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <TokenIcon network={network} size={34} />
-          <Text style={{ color: colors.text, fontSize: 18, fontWeight: '800' }}>Deposit USDT ({n.label})</Text>
+          <Text style={{ color: colors.text, fontSize: 18, fontWeight: '800' }}>Deposit {asset === 'native' ? n.nativeSymbol : `USDT (${n.label})`}</Text>
         </View>
         <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: radius.lg }}>
           <QRCode value={address} size={200} />
@@ -48,14 +55,20 @@ export default function DepositScreen({ route }) {
             icon="share-outline"
             variant="secondary"
             style={{ flex: 1 }}
-            onPress={() => Share.share({ message: `My USDT (${n.label}) address:\n${address}` })}
+            onPress={() => Share.share({ message: `My ${sym} (${n.name}) address:\n${address}` })}
           />
         </View>
       </View>
 
-      <Notice tone="warn">
-        Send only USDT on the {n.name} ({n.label}) network to this address. Other tokens or networks may be lost permanently.
-      </Notice>
+      {asset === 'native' ? (
+        <Notice tone="info" icon="flash">
+          Send only {n.nativeSymbol} on the {n.name} network to this address. {n.nativeSymbol} is used to pay network fees directly from your wallet.
+        </Notice>
+      ) : (
+        <Notice tone="warn">
+          Send only USDT on the {n.name} ({n.label}) network to this address. Other tokens or networks may be lost permanently.
+        </Notice>
+      )}
     </Screen>
   );
 }

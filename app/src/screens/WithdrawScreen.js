@@ -7,21 +7,27 @@ import * as WebBrowser from 'expo-web-browser';
 import { Screen, Btn, Field, Label, Muted, Segmented, ErrorText, Notice, Row, IconBtn } from '../components/ui';
 import { useWallet } from '../context/WalletContext';
 import { NETWORKS, addressFor } from '../config/chains';
-import { getUsdtBalances, isSameAddress } from '../services/usdt';
+import { getUsdtBalances, getNativeBalances, estimateNativeFee, transferUsdt, toRaw, fmtNative, NATIVE_DECIMALS, isSameAddress } from '../services/usdt';
+import { getMnemonic } from '../services/secure';
+import { deriveAccounts } from '../services/wallet';
 import { getFeeQuote, withdrawUsdt } from '../services/gas';
 import { isValidAddress, detectNetwork, parseScanned, normalizeAddress } from '../services/wallet';
 import { getRecentAddresses, addRecentAddress } from '../services/secure';
 import { fmtUsdt } from '../services/prices';
 import { colors, radius, mono } from '../theme';
 
-const STEPS = [
+const USDT_STEPS = [
   ['prepare', 'Preparing network fee'],
   ['fund', 'Funding gas'],
   ['fee', 'Paying fee in USDT'],
   ['send', 'Sending USDT'],
 ];
+const NATIVE_STEPS = [['send', 'Sending USDT']];
 
 const round2 = (n) => Math.floor(n * 100) / 100;
+const toRaw2 = (network, v) => {
+  try { return BigInt(Math.floor(Number(v) * 10 ** Math.min(NATIVE_DECIMALS[network], 9))) * 10n ** BigInt(Math.max(0, NATIVE_DECIMALS[network] - 9)); } catch { return 0n; }
+};
 
 function HighlightAddress({ value }) {
   const a = value.slice(0, 6), b = value.slice(6, -6), c = value.slice(-6);
@@ -38,6 +44,9 @@ export default function WithdrawScreen({ route, navigation }) {
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
   const [balances, setBalances] = useState({ tron: null, bsc: null });
+  const [native, setNative] = useState({ tron: null, bsc: null });
+  const [nativeFee, setNativeFee] = useState(null); // raw BigInt
+  const [feeMode, setFeeMode] = useState('auto'); // auto | native | usdt
   const [quote, setQuote] = useState(null);
   const [quoting, setQuoting] = useState(false);
   const [err, setErr] = useState('');
@@ -54,10 +63,18 @@ export default function WithdrawScreen({ route, navigation }) {
   const dest = to.trim();
   const addrOk = isValidAddress(network, dest);
   const amt = Number(amount);
-  const fee = quote ? Number(quote.fee) : null;
+  const sym = n.nativeSymbol;
+  const nativeBal = native[network] != null ? toRaw2(network, native[network]) : 0n;
+  const nativeOk = nativeFee != null && nativeBal >= nativeFee;
+  const mode = feeMode === 'auto' ? (nativeOk ? 'native' : 'usdt') : feeMode;
+  const usdtFee = quote ? Number(quote.fee) : null;
+  const fee = mode === 'native' ? 0 : usdtFee; // USDT deducted as fee
+  const feeReady = mode === 'native' ? nativeFee != null : usdtFee != null;
+  const STEPS = mode === 'native' ? NATIVE_STEPS : USDT_STEPS;
 
   useEffect(() => {
     getUsdtBalances(addresses).then(setBalances);
+    getNativeBalances(addresses).then(setNative);
     getRecentAddresses().then(setRecent);
   }, []);
 
@@ -68,18 +85,21 @@ export default function WithdrawScreen({ route, navigation }) {
   // Live fee quote (debounced)
   useEffect(() => {
     setQuote(null);
+    setNativeFee(null);
     if (!addrOk || !(amt > 0)) return;
     const id = ++qid.current;
     setQuoting(true);
     const t = setTimeout(async () => {
-      try {
-        const q = await getFeeQuote(network, from, dest, amt);
-        if (id === qid.current) { setQuote(q); setErr(''); }
-      } catch (e) {
-        if (id === qid.current) setErr(e.message);
-      } finally {
-        if (id === qid.current) setQuoting(false);
-      }
+      const to2 = normalizeAddress(network, dest);
+      const [q, nf] = await Promise.allSettled([
+        getFeeQuote(network, from, dest, amt),
+        estimateNativeFee(network, from, to2, toRaw(network, amt)),
+      ]);
+      if (id !== qid.current) return;
+      if (q.status === 'fulfilled') setQuote(q.value);
+      if (nf.status === 'fulfilled') setNativeFee(nf.value);
+      setErr(q.status === 'rejected' && nf.status === 'rejected' ? q.reason.message : '');
+      setQuoting(false);
     }, 600);
     return () => clearTimeout(t);
   }, [network, dest, amount]);
@@ -93,6 +113,7 @@ export default function WithdrawScreen({ route, navigation }) {
 
   const setMax = async () => {
     if (!balance) return;
+    if (mode === 'native') return setAmount(String(round2(balance)));
     if (fee != null) return setAmount(String(round2(Math.max(0, balance - fee))));
     if (!addrOk) return setErr('Enter the recipient address first');
     try {
@@ -114,7 +135,8 @@ export default function WithdrawScreen({ route, navigation }) {
     if (isSameAddress(dest, from)) return 'You can’t send to your own address';
     if (!(amt > 0)) return 'Enter an amount';
     if (amt < 1) return 'Minimum withdrawal is 1 USDT';
-    if (fee == null) return quoting ? 'Calculating network fee…' : 'Network fee unavailable';
+    if (!feeReady) return quoting ? 'Calculating network fee…' : 'Network fee unavailable';
+    if (mode === 'native' && !nativeOk) return `Not enough ${sym} for the network fee. You need about ${fmtNative(network, nativeFee)} ${sym}. Deposit ${sym} or pay the fee in USDT.`;
     if (total > balance + 1e-9) return `Insufficient balance. You need ${fmtUsdt(total)} USDT including fee.`;
     return '';
   };
@@ -132,7 +154,16 @@ export default function WithdrawScreen({ route, navigation }) {
     if (!(await requestAuth('Approve withdrawal'))) return;
     setSendErr('');
     try {
-      const r = await withdrawUsdt({ network, to: normalizeAddress(network, dest), amount: amt, onStep: setStep });
+      const toAddr = normalizeAddress(network, dest);
+      let r;
+      if (mode === 'native') {
+        setStep('send');
+        const acc = deriveAccounts(await getMnemonic());
+        const hash = await transferUsdt(network, network === 'tron' ? acc.tron : acc.evm, toAddr, toRaw(network, amt));
+        r = { hash, fee: 0 };
+      } else {
+        r = await withdrawUsdt({ network, to: toAddr, amount: amt, onStep: setStep });
+      }
       await addRecentAddress(dest);
       setResult(r);
     } catch (e) {
@@ -189,13 +220,35 @@ export default function WithdrawScreen({ route, navigation }) {
         />
       </View>
 
+      <View style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Label>Pay network fee with</Label>
+          <Muted style={{ fontSize: 13 }}>{sym} balance: {native[network] == null ? '—' : fmtNative(network, nativeBal)}</Muted>
+        </View>
+        <Segmented
+          items={[{ key: 'native', label: `${sym} (wallet)` }, { key: 'usdt', label: 'USDT' }]}
+          value={mode}
+          onChange={(k) => { setFeeMode(k); setErr(''); }}
+        />
+      </View>
+
       <View style={{ backgroundColor: colors.card, borderRadius: radius.lg, padding: 16 }}>
-        <Row label="Network fee" value={quoting ? 'Calculating…' : fee != null ? `${fmtUsdt(fee)} USDT` : '—'} />
+        <Row label="Network fee" value={quoting ? 'Calculating…' : mode === 'native' ? (nativeFee != null ? `≈ ${fmtNative(network, nativeFee)} ${sym}` : '—') : usdtFee != null ? `${fmtUsdt(usdtFee)} USDT` : '—'} />
         <Row label="Recipient gets" value={amt > 0 ? `${fmtUsdt(amt)} USDT` : '—'} />
         <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginVertical: 6 }} />
         <Row label="Total" value={total != null ? `${fmtUsdt(total)} USDT` : '—'} strong />
-        <Text style={{ color: colors.muted, fontSize: 12, marginTop: 6 }}>Fee is paid in USDT — no TRX or BNB needed.</Text>
+        <Text style={{ color: colors.muted, fontSize: 12, marginTop: 6 }}>
+          {mode === 'native'
+            ? `Fee is paid from your ${sym} balance. The exact amount is set by the network.`
+            : `Fee is paid in USDT — no ${sym} needed.`}
+        </Text>
       </View>
+
+      {mode === 'native' && nativeFee != null && !nativeOk && (
+        <Notice tone="warn">
+          Not enough {sym} for this fee (about {fmtNative(network, nativeFee)} {sym}). Deposit {sym} to your {n.label} address or pay the fee in USDT.
+        </Notice>
+      )}
 
       {lookalike && (
         <Notice tone="danger">
@@ -222,8 +275,8 @@ export default function WithdrawScreen({ route, navigation }) {
                 </View>
                 <View style={s.box}>
                   <Row label="Network" value={`${n.name} (${n.label})`} />
-                  <Row label="Network fee" value={`${fmtUsdt(fee)} USDT`} />
-                  <Row label="Total deducted" value={`${fmtUsdt(total)} USDT`} strong />
+                  <Row label="Network fee" value={mode === 'native' ? `≈ ${fmtNative(network, nativeFee)} ${sym}` : `${fmtUsdt(fee)} USDT`} />
+                  <Row label="Total deducted" value={mode === 'native' ? `${fmtUsdt(total)} USDT + fee in ${sym}` : `${fmtUsdt(total)} USDT`} strong />
                 </View>
                 {isNew && <Notice tone="warn">First time sending to this address. Make sure it is correct — blockchain transfers can’t be reversed.</Notice>}
                 <ErrorText>{sendErr}</ErrorText>

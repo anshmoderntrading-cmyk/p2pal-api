@@ -23,6 +23,55 @@ export async function getNativeRaw(network, address) {
   return bscProvider().getBalance(address);
 }
 
+export const NATIVE_DECIMALS = { tron: 6, bsc: 18 };
+
+// Native coin balances used for network fees: { tron: '25.4', bsc: '0.003' } — failed network returns null
+export async function getNativeBalances(addresses) {
+  const [tron, bsc] = await Promise.allSettled([getNativeRaw('tron', addresses.tron), getNativeRaw('bsc', addresses.evm)]);
+  return {
+    tron: tron.status === 'fulfilled' ? formatUnits(tron.value, 6) : null,
+    bsc: bsc.status === 'fulfilled' ? formatUnits(bsc.value, 18) : null,
+  };
+}
+
+/**
+ * Estimated network fee (raw TRX sun / BNB wei) for sending USDT directly from the wallet.
+ * Includes a 15% safety buffer. Accounts for free/staked TRON energy and bandwidth.
+ */
+export async function estimateNativeFee(network, from, to, rawAmount) {
+  if (network === 'tron') {
+    const tw = tronWeb();
+    const [sim, res, params] = await Promise.all([
+      tw.transactionBuilder.triggerConstantContract(
+        NETWORKS.tron.usdt.address, 'transfer(address,uint256)', {},
+        [{ type: 'address', value: to }, { type: 'uint256', value: rawAmount.toString() }], from
+      ),
+      tw.trx.getAccountResources(from).catch(() => ({})),
+      tw.trx.getChainParameters(),
+    ]);
+    const energyUsed = BigInt(sim.energy_used || 65000);
+    const energyFee = BigInt(params.find((p) => p.key === 'getEnergyFee')?.value || 210); // sun per energy
+    const freeEnergy = BigInt(Math.max(0, (res.EnergyLimit || 0) - (res.EnergyUsed || 0)));
+    const needEnergy = energyUsed > freeEnergy ? energyUsed - freeEnergy : 0n;
+    const freeBw = (res.freeNetLimit || 0) - (res.freeNetUsed || 0) + (res.NetLimit || 0) - (res.NetUsed || 0);
+    const bwCost = freeBw >= 350 ? 0n : 350n * 1000n; // ~350 bytes at 1000 sun/byte
+    return ((needEnergy * energyFee + bwCost) * 115n) / 100n;
+  }
+  const p = bscProvider();
+  const data = new Contract(NETWORKS.bsc.usdt.address, ERC20).interface.encodeFunctionData('transfer', [to, rawAmount]);
+  const [gas, feeData] = await Promise.all([
+    p.estimateGas({ from, to: NETWORKS.bsc.usdt.address, data }),
+    p.getFeeData(),
+  ]);
+  const price = feeData.gasPrice || 1_000_000_000n;
+  return (gas * price * 115n) / 100n;
+}
+
+export const fmtNative = (network, raw) => {
+  const v = Number(formatUnits(raw, NATIVE_DECIMALS[network]));
+  return v.toLocaleString('en-US', { maximumFractionDigits: network === 'tron' ? 2 : 6 });
+};
+
 // { tron: '12.50', bsc: '0.00' } — failed network returns null
 export async function getUsdtBalances(addresses) {
   const [tron, bsc] = await Promise.allSettled([
