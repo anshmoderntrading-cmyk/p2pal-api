@@ -4,7 +4,7 @@ export const ENV = {
   TRONGRID_API_KEY: process.env.EXPO_PUBLIC_TRONGRID_API_KEY || '',
   ETHERSCAN_API_KEY: process.env.EXPO_PUBLIC_ETHERSCAN_API_KEY || '',
   API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://p2pal-api.onrender.com',
-  ONRAMP_APP_ID: process.env.EXPO_PUBLIC_ONRAMP_APP_ID || '',
+  ONRAMP_APP_ID: process.env.EXPO_PUBLIC_ONRAMP_APP_ID || '2847221',
   TRANSAK_API_KEY: process.env.EXPO_PUBLIC_TRANSAK_API_KEY || '',
   TRANSAK_ENV: process.env.EXPO_PUBLIC_TRANSAK_ENV || 'production',
   P2P_URL: process.env.EXPO_PUBLIC_P2P_URL || '',
